@@ -14,6 +14,17 @@ for l in lines:
     elif cs[0] == cs[2]:
         for i in range(min(cs[1], cs[3]), max(cs[1], cs[3])+1):
             m[cs[0]][i]+=1
+    else:
+        if (cs[0] < cs[2]) == (cs[1] < cs[3]):
+            mx = min(cs[0], cs[2])
+            my = min(cs[1], cs[3])
+            for i in range(abs(cs[2]-cs[0])+1):
+                m[mx+i][my+i]+=1
+        else:
+            mx = max(cs[0], cs[2])
+            my = min(cs[1], cs[3])
+            for i in range(abs(cs[2]-cs[0])+1):
+                m[mx-i][my+i]+=1
 
 count = 0
 for r in m:
