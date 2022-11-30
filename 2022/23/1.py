@@ -1,0 +1,1 @@
+with open("i.txt") as f:
