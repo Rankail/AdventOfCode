@@ -1,0 +1,1 @@
+print(sum(ord(l[-1])*3+(ord(l[0])+ord(l[-1])-1)%3-263 for l in open("i.txt").read().split("\n")))
