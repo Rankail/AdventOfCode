@@ -25,6 +25,5 @@ for l in data:
     elif b-a == 0:
         n += 3
     n+= b+1
-    print (n)
 
 print( n )
