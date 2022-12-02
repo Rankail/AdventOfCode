@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: AoC",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/2022/02/1.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/2022/02"
+        }
+    ]
+}
