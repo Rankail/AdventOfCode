@@ -1,1 +1,0 @@
-with open("i2.txt") as f:
