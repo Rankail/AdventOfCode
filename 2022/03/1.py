@@ -1,5 +1,3 @@
-import re
-
 data = open("i.txt").read().split("\n")
 
 n = 0

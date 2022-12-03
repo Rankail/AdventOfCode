@@ -1,0 +1,1 @@
+print(sum(ord(c)-38 if ord(c)<97 else ord(c)-96 for c in [set(d[:len(d)//2]).intersection(d[len(d)//2:]).pop() for d in open("i.txt").read().split("\n")]))
