@@ -9,7 +9,6 @@ for l in data:
         s = 0
     else:
         s += int(l)
-    print(l, s, "\n")
 
 c.sort(reverse=True)
 
