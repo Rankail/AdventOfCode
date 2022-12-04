@@ -15,7 +15,8 @@ if not os.path.isdir(p):
     os.mkdir(p+"/py")
     os.mkdir(p+"/js")
     os.mkdir(p+"/java")
-    open(p+"/py/1.py", "x")
+    with open(p+"/py/1.py", "x") as f:
+        f.write("data = open(\"i.txt\").read().split(\"\\n\")\n\n")
     open(p+"/py/2.py", "x")
 
 webbrowser.open("https://adventofcode.com/")
