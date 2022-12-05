@@ -7,7 +7,6 @@ stacks: list[str] = [""]*c
 
 for s in reversed(stackInput.split("\n")[:-1]):
     i = 0
-    print(s)
     for i in range(c):
         if s[i*4+1] != " ":
             stacks[i] += s[i*4+1]
