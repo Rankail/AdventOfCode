@@ -1,0 +1,41 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "auto-debug",
+            "type": "auto-debug",
+            "request": "launch",
+            "map": {
+                "*.py": "Python: AoC",
+                "*.js": "JS: AoC",
+                "*.java": "Java: AoC",
+                "*.cpp": "C++: AoC"
+            }
+        },
+        {
+            "name": "JS: AoC",
+            "type": "node",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${fileDirname}/.."
+        },
+        {
+            "name": "Python: AoC",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "cwd": "${fileDirname}/.."
+        },
+        {
+            "name": "Java: AoC",
+            "type": "java",
+            "request": "launch",
+            "mainClass": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${fileDirname}/.."
+        }
+    ]
+}
