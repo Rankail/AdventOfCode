@@ -1,0 +1,1 @@
+print(next([(i+4 for i in range(len(d)-4) if len(set(d[i:i+4]))==4) for d in [open("i.txt").read()]][0]))

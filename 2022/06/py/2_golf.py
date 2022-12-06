@@ -1,0 +1,1 @@
+print(next([(i+14 for i in range(len(d)-14) if len(set(d[i:i+14]))==14) for d in [open("i.txt").read()]][0]))
