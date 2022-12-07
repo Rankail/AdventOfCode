@@ -62,9 +62,8 @@ for l in data:
             curdir.dirs.append(n)
 
 m = []
-free = 70000000 - root.getSize()
-need = 30000000 - free
-x = 2147000000
+need = root.getSize() - 40000000
+x = root.getSize()
 
 def travMax(n: Node):
     global x
