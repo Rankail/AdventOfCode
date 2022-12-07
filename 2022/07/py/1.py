@@ -1,17 +1,30 @@
+from __future__ import annotations
+
 data = open("i.txt").read().split("\n")
 
 class Node:
     parent = None
-    files: list
-    dirs: list
-    name: str = ""
-    size: int = 0
+    files: list[Node] = None
+    dirs: list[Node] = None
+    name: str = None
+    size: int = None
 
-    def __init__(self):
-        self.parent = None
-        self.files = []
+    def __init__(self, parent: Node = None, name: str = "", size: int = 0):
+        self.parent = parent
+        self.name = name
+        self.size = size
         self.dirs = []
-        self.size = 0
+        self.files = []
+
+    def getSize(self):
+        if self.size != 0:
+            return self.size
+
+        for f in self.files:
+            self.size += f.size
+        for d in n.dirs:
+            self.size += d.getSize()
+        return self.size
 
     def __str__(self, level=0):
         ret = "\t"*level+repr(self)+"\n"
@@ -26,56 +39,36 @@ class Node:
             return f"> {self.name} {self.size}"
         return f"{self.name} {self.size}"
 
-root = Node()
-root.name = "/"
-
-curdir = root
+root = Node(None, "/")
+curDir = root
 
 for l in data:
     if l.startswith("$"):
         if l == "$ cd /":
-            curdir = root
+            curDir = root
         elif l == "$ cd ..":
-            curdir = curdir.parent
+            curDir = curDir.parent
         elif l.startswith("$ cd"):
             d = l[5:]
-            curdir = next(f for f in curdir.dirs if f.name == d)
+            curDir = next(f for f in curDir.dirs if f.name == d)
     else:
         d = l.split(" ")
         if d[0] != "dir":
-            n = Node()
-            n.name = d[1]
-            n.size = int(d[0])
-            n.parent = curdir
-            curdir.files.append(n)
+            n = Node(curDir, d[1], int(d[0]))
+            curDir.files.append(n)
         else:
-            n = Node()
-            n.name = d[1]
-            n.parent = curdir
-            curdir.dirs.append(n)
+            n = Node(curDir, d[1])
+            curDir.dirs.append(n)
 
-def traverse(n: Node) -> int:
-    if n.size != 0:
-        return n.size
-
-    for c in n.files:
-        n.size += c.size
-    for d in n.dirs:
-        n.size += traverse(d)
-    return n.size
-
-traverse(root)
+root.getSize()
 
 m = []
-
-def travMax(n: Node):
+def traverseMax100k(n: Node):
     for d in n.dirs:
-        travMax(d)
+        traverseMax100k(d)
     if n.size <= 100000:
         m.append(n)
         return
 
-travMax(root)
-
-print(root)
+traverseMax100k(root)
 print(sum(n.size for n in m))
