@@ -22,7 +22,7 @@ class Node:
 
         for f in self.files:
             self.size += f.size
-        for d in n.dirs:
+        for d in self.dirs:
             self.size += d.getSize()
         return self.size
 
@@ -62,15 +62,17 @@ for l in data:
             curdir.dirs.append(n)
 
 m = []
-need = root.getSize() - 40000000
+free = 70000000 - root.getSize()
+need = 30000000 - free
+x = 2147000000
 
 def travMax(n: Node):
+    global x
     if n.size < need:
         return
-    m.append(n.size)
+    x = min(x, n.size)
     for d in n.dirs:
         travMax(d)
 
 travMax(root)
-m.sort()
-print(m[0])
+print(x)

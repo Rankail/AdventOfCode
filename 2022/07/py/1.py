@@ -20,10 +20,12 @@ class Node:
         if self.size != 0:
             return self.size
 
+        x = 0
         for f in self.files:
-            self.size += f.size
-        for d in n.dirs:
-            self.size += d.getSize()
+            x += f.size
+        for d in self.dirs:
+            x += d.getSize()
+        self.size = x
         return self.size
 
     def __str__(self, level=0):
@@ -36,8 +38,8 @@ class Node:
 
     def __repr__(self):
         if not (len(self.dirs) == 0 and len(self.files) == 0):
-            return f"> {self.name} {self.size}"
-        return f"{self.name} {self.size}"
+            return f"  {self.name} {self.size}"
+        return f"- {self.name} {self.size}"
 
 root = Node(None, "/")
 curDir = root
@@ -68,7 +70,6 @@ def traverseMax100k(n: Node):
         traverseMax100k(d)
     if n.size <= 100000:
         m.append(n)
-        return
 
 traverseMax100k(root)
 print(sum(n.size for n in m))
