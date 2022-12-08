@@ -1,6 +1,5 @@
 data = [[int(d) for d in list(row)] for row in open("i.txt").read().split("\n")]
 print(data)
-n = 0
 w = len(data[0])
 h = len(data)
 m = 0
