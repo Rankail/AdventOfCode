@@ -1,17 +1,30 @@
+from __future__ import annotations
+
 data = open("i.txt").read().split("\n")
 
 class Node:
     parent = None
-    files: list
-    dirs: list
-    name: str = ""
-    size: int = 0
+    files: list[Node] = None
+    dirs: list[Node] = None
+    name: str = None
+    size: int = None
 
-    def __init__(self):
-        self.parent = None
-        self.files = []
+    def __init__(self, parent: Node = None, name: str = "", size: int = 0):
+        self.parent = parent
+        self.name = name
+        self.size = size
         self.dirs = []
-        self.size = 0
+        self.files = []
+
+    def getSize(self):
+        if self.size != 0:
+            return self.size
+
+        for f in self.files:
+            self.size += f.size
+        for d in self.dirs:
+            self.size += d.getSize()
+        return self.size
 
     def __str__(self, level=0):
         ret = "\t"*level+repr(self)+"\n"
@@ -42,43 +55,23 @@ for l in data:
     else:
         d = l.split(" ")
         if d[0] != "dir":
-            n = Node()
-            n.name = d[1]
-            n.size = int(d[0])
-            n.parent = curdir
+            n = Node(curdir, d[1], int(d[0]))
             curdir.files.append(n)
         else:
-            n = Node()
-            n.name = d[1]
-            n.parent = curdir
+            n = Node(curdir, d[1])
             curdir.dirs.append(n)
 
-
-def traverse(n: Node) -> int:
-    if n.size != 0:
-        return n.size
-
-    for c in n.files:
-        n.size += c.size
-    for d in n.dirs:
-        n.size += traverse(d)
-    return n.size
-
-traverse(root)
-
 m = []
-need = root.size - 40000000
+need = root.getSize() - 40000000
+x = root.getSize()
 
 def travMax(n: Node):
+    global x
     if n.size < need:
         return
-    m.append(n.size)
+    x = min(x, n.size)
     for d in n.dirs:
         travMax(d)
 
 travMax(root)
-
-m.sort()
-print(root)
-
-print(m[0])
+print(x)
