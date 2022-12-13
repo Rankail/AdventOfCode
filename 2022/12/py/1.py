@@ -1,46 +1,41 @@
-import math
-import sys
-import threading
-
-sys.setrecursionlimit(100000)
-threading.stack_size(10**8)
+from collections import deque
 
 data = open("i.txt").read().split("\n")
 
 board: list[list[int]] = []
-costs: list[list[int]] = []
 
-start = [0, 0]
+start: tuple[int, int]
 
-end = [0, 0]
+end: tuple[int, int]
 
 for i, l in enumerate(data):
     board.append(list())
-    costs.append(list())
     for j, e in enumerate(l):
         if e == "S":
-            start[0] = i
-            start[1] = j
+            start = (i,j)
             board[i].append(0)
         elif e == "E":
-            end[0] = i
-            end[1] = j
+            end = (i, j)
             board[i].append(26)
         else:
             board[i].append(ord(e)-97)
-        costs[i].append(math.inf)
 
-def check(x, y, c, prevH):
-    if not (0<=x<len(board) and 0<=y<len(board[x])): return
-    h = board[x][y]
-    if prevH+1 < h: return
-    if costs[x][y] <= c or c > costs[end[0]][end[1]]: return
-    costs[x][y] = c
-    check(x-1, y, c+1, h)
-    check(x+1, y, c+1, h)
-    check(x, y-1, c+1, h)
-    check(x, y+1, c+1, h)
+def bfs():
+    visited = {(start[0], start[1])}
+    q: deque[tuple[int, int, int]] = deque()
+    q.append((0, start[0], start[1]))
+    while len(q) > 0:
+        kost, cx, cy = q.popleft()
+        for rx, ry in ((cx-1, cy), (cx+1, cy), (cx, cy-1), (cx, cy+1)):
+            if not (0<=rx<len(board) and 0<=ry<len(board[0])): continue
+            if (rx, ry) in visited: continue
+            if board[rx][ry]-board[cx][cy]>1: continue
+            if rx == end[0] and ry == end[1]:
+                print(kost +1)
+                exit(0)
+            visited.add((rx, ry))
+            q.append((kost+1, rx, ry))
+                
 
-check(start[0], start[1], 0, 0)
-
-print("\n".join(["".join(["#" if e!=math.inf else "." for e in l]) for l in costs]))
+bfs()
+print("failed")
