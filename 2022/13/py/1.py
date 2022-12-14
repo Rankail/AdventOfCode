@@ -1,31 +1,4 @@
-from typing import Any
-
 data = open("i.txt").read().split("\n\n")
-        
-def parse(d: str) -> tuple[list[Any], int]:
-    obj = []
-    token = ""
-    i = 0
-    while i < len(d):
-        e = d[i]
-        if e == ",":
-            if token:
-                obj.append(int(token))
-            token = ""
-        elif e == "]":
-            if token:
-                obj.append(int(token))
-            return (obj, i+1)
-        elif e == "[":
-            n, j = parse(d[i+1:])
-            i += j
-            obj.append(n)
-        else:
-            token += e
-        i += 1
-    if token:
-        obj.append(int(token))
-    return (obj, i)
 
 def compare(l1, l2):
     for l, r in zip(l1, l2):
@@ -52,10 +25,11 @@ def compare(l1, l2):
 inds = []
 for i, ps in enumerate(data):
     p1, p2 = ps.split("\n")
-    l1 = parse(p1[1:-1])[0]
-    l2 = parse(p2[1:-1])[0]
+    l1 = eval(p1)
+    l2 = eval(p2)
 
     if compare(l1, l2) < 0:
         inds.append(i+1)
 
 print(sum(inds))
+# 5882
