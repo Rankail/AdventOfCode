@@ -1,36 +1,37 @@
-import re, math
+import re, sys, time
 
 data = open("i.txt").read().split("\n")
 
-mi = math.inf
-ma = 0
-bs = []
 sen = []
-ds = []
 for l in data:
-    m = re.match(r"Sensor at x\=(-?\d+)\, y\=(-?\d+)\: closest beacon is at x\=(-?\d+)\, y\=(-?\d+)", l)
-    bs.append((int(m.group(3)), int(m.group(4))))
-    sen.append((int(m.group(1)), int(m.group(2))))
-    ds.append(abs(int(m.group(3))-int(m.group(1)))+abs(int(m.group(2))-int(m.group(4))))
-    ma = max(ma, int(m.group(3)))
-    ma = max(ma, int(m.group(1)))
-    mi = min(mi, int(m.group(3)))
-    mi = min(mi, int(m.group(1)))
+    m = list(int(n) for n in re.findall(r"-?\d+", l))
+    sen.append((m[0], m[1], abs(m[2]-m[0])+abs(m[3]-m[1])))
 
-def getPossibles(row):
-    blocked = set()
-    for s, d in zip(sen, ds):
-        dif = abs(row-s[1])
-        if dif >= d: continue
-        blocked.update(range(max(0, s[0]-(d-dif)), min(s[0]+(d-dif)+1, 4000000)))
-    return blocked
+found_solution = False
+
 
 m = 4000000
-r = set(range(0, m))
-for i in range(0, m):
-    if (i%10000 == 0): print(i)
-    p = getPossibles(i)
-    diff = r.difference(p)
-    if diff:
-        diff = list(diff)
-        print(diff, diff[0]*m+i)
+barLen = 100
+printStep = max(1, m//barLen)
+startT = time.perf_counter_ns()
+for i in range(m+1):
+    if (i%printStep==0):
+        p = i/m
+        sys.stdout.write(f"\r[{'='*int(barLen*p)}{' '*(barLen-int((barLen*p)))}] {i/40000:02}%")
+    rngs = []
+    for sx, sy, d in sen:
+        rd = abs(sy-i)
+        if d >= rd:
+            rngs.append((max(0, sx-(d-rd)), min(sx+(d-rd), m)))
+    rngs.sort(key=lambda x: x[0])
+    j = 0
+    for r in rngs:
+        if r[0] > j+1:
+            if (j+1 == r[0]-1):
+                sys.stdout.write(f"\rfound possible solution: ({j+1}, {i}) => {(j+1)*m+i}{' '*barLen}\n")
+                found_solution = True
+        j = max(j, r[1])
+
+sys.stdout.write(f"\r[{'='*barLen}] 100.0% {' '*barLen}\n")
+print(f"finished after {(time.perf_counter_ns()-startT)/1000000000}s")
+if not found_solution: print("no solution was found")
