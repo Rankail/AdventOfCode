@@ -2,12 +2,13 @@ import re, sys, time
 
 data = open("i.txt").read().split("\n")
 
+def man(x1, y1, x2, y2):
+    return abs(x2-x1)+abs(y2-y1)
+
 sen = []
 for l in data:
     m = list(int(n) for n in re.findall(r"-?\d+", l))
-    sen.append((m[0], m[1], abs(m[2]-m[0])+abs(m[3]-m[1])))
-
-found_solution = False
+    sen.append((m[0], m[1], man(m[0], m[1], m[2], m[3])))
 
 
 m = 4000000
@@ -27,11 +28,11 @@ for i in range(m+1):
     j = 0
     for r in rngs:
         if r[0] > j+1:
-            if (j+1 == r[0]-1):
-                sys.stdout.write(f"\rfound possible solution: ({j+1}, {i}) => {(j+1)*m+i}{' '*barLen}\n")
-                found_solution = True
+            sys.stdout.write(f"\rfound possible solution: ({j+1}, {i}) => {(j+1)*m+i}{' '*barLen}\n")
+            found_solution = True
         j = max(j, r[1])
 
 sys.stdout.write(f"\r[{'='*barLen}] 100.0% {' '*barLen}\n")
 print(f"finished after {(time.perf_counter_ns()-startT)/1000000000}s")
 if not found_solution: print("no solution was found")
+# (3103499, 3391794) => 12413999391794
