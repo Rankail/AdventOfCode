@@ -1,11 +1,10 @@
 import subprocess
 import webbrowser
-import sys
 import os
 
 day = int(input("Day: "))
 if 25 < day or 0 > day:
-    print("error day")
+    print("invalid day")
     exit()
 p = f"C:/dev/AdventOfCode/2022/{day:02}"
 if not os.path.isdir(p):
@@ -13,8 +12,6 @@ if not os.path.isdir(p):
     open(p+"/i.txt", "x")
     open(p+"/i2.txt", "x")
     os.mkdir(p+"/py")
-    os.mkdir(p+"/js")
-    os.mkdir(p+"/java")
     with open(p+"/py/1.py", "x") as f:
         f.write("data = open(\"i.txt\").read().split(\"\\n\")\n\n")
     open(p+"/py/2.py", "x")
