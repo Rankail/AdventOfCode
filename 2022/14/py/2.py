@@ -54,4 +54,9 @@ while board[0][500]==0:
             board[y][x] = 2
             break
 
+def printArr(arr: list[list[int]]):
+    print("\n".join("".join(" " if e == 0 else ("\u2588" if e == 1 else "\u2591") for e in l) for l in arr))
+
+printArr([l[420:580] for l in board])
+
 print(c)
