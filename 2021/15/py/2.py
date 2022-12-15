@@ -1,7 +1,6 @@
-from collections import deque
-import threading
-
-threading.stack_size(10**8)
+from collections import defaultdict, deque
+from heapq import heappop, heappush
+import math
 
 board = [[int(n) for n in l] for l in open("i.txt").read().split("\n")]
 
@@ -13,27 +12,28 @@ def getRisk(x, y):
     return (board[x%w][y%h]+x//w+y//h-1)%9+1
 
 def path():
-    visited: list[tuple[int, int]] = list((0,0))
-    no: list[tuple[int, int, int]] = list()
-    no.append((0,0,0))
-    while no:
-        nx, ny, c = 0, 0, (len(board)**2)*10
-        for n in no:
-            if n[2] < c:
-                nx, ny, c = n
-        no.remove((nx, ny, c))
-        for rx, ry in (nx+1, ny), (nx-1, ny), (nx, ny+1), (nx, ny-1):
-            if not(0<=rx<=ex and 0<=ry<=ey): continue
-            if (rx, ry) in visited: continue
+    risks = defaultdict(lambda: math.inf)
+    risks[(0,0)] = 0
+    unvisited: list[tuple[int, int]] = set()
+    for y in range(w*5):
+        for x in range(h*5):
+            unvisited.add((x, y))
+    
+    no: list[tuple[int, int, int]] = []
+    heappush(no, (0,(0,0)))
+    while (ex, ey) in unvisited:
+        risk, cur = heappop(no)
+        if not cur in unvisited: continue
+        cx, cy = cur
+        for rx, ry in (cx+1, cy), (cx-1, cy), (cx, cy+1), (cx, cy-1):
+            if not (rx, ry) in unvisited: continue
             if rx == ex and ry == ey:
-                print(c+getRisk(rx, ry))
+                print(risk+getRisk(rx, ry))
                 exit(0)
-            no.append((rx, ry, c+getRisk(rx, ry)))
-            visited.append((rx, ry))
-
-thread = threading.Thread(target=path)
-thread.start()
-thread.join()
+            neigrisk = min(risks[(rx, ry)], risk+getRisk(rx, ry))
+            risks[(rx,ry)] = neigrisk
+            heappush(no, (neigrisk, (rx, ry)))
+        unvisited.remove(cur)
 
 path()
 print("failed")
