@@ -74,6 +74,9 @@ for name, connected in conns.items():
         for c in connected:
             nodes[name].conns[nodes[c]] = 1
 
+starts: set[Node] = set()
+starts.add(nodes["AA"])
+
 foundZero = True
 while foundZero:
     foundZero = False
@@ -87,17 +90,22 @@ while foundZero:
                     if c == d: continue
                     nodes[c.name].conns[d] = cd+dd
                     nodes[d.name].conns[c] = cd+dd
+            if n in starts:
+                for c in n.conns.keys():
+                    starts.add(c)
+                starts.remove(n)
             n.conns = dict()
-
-starts = []
-
 
 nodes = {n.name: n for n in nodes.values() if n.rate != 0}
 for n in nodes.values():
     n.conns = {n: d for n, d in n.conns.items() if n.rate != 0}
 
 print(nodes)
-
+print()
+print(starts)
+for n in starts:
+    n.check(0, 0, 0, [])
+    print(ma)
 # nodes["AA"].check(0, 0, 0, [])
 
 # print(check("AA", [], 0, 1))
