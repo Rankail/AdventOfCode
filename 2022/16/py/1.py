@@ -22,7 +22,7 @@ class Node:
 for l in data:
     m = re.match(r"Valve (.*) has flow rate=(.*); tunnels? leads? to valves? (.*)", l)
     name, flowrate, others = m.group(1), int(m.group(2)), m.group(3).split(", ")
-    print(name, flowrate, others)
+    # print(name, flowrate, others)
     nodes[name] = others
     rate[name] = flowrate
 
@@ -47,7 +47,7 @@ def bfs():
     q = deque()
     q.append(("AA", [], 0, 0, 1))
     while q:
-        print(len(q))
+        # print(len(q))
         name, opened, speed, released, time = q.popleft()
         if (highest[name] > released+speed*(30-time+1)): continue
         highest[name] = max(highest[name], released+speed*(30-time))
@@ -62,6 +62,5 @@ def bfs():
 
 bfs()
 
-# print(check("AA", [], 0, 1))
 
 # 2119

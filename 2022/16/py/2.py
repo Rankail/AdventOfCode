@@ -1,114 +1,154 @@
 from __future__ import annotations
+from heapq import heappop, heappush
 import re
-import sys
 from collections import deque, defaultdict
-from heapq import heappush, heappop
 
-data = open("i2.txt").read().split("\n")
+data = open("i.txt").read().split("\n")
 
 nodes: dict[str, Node] = {}
-conns: dict[str, list[str]] = {}
+dists = {}
 
 ma = 0
 
-# class Connection:
-#     node: Node = None
-#     dist: int = None
+def printNodes(suffix: str = ""):
+    print("###########")
+    for n in nodes.values():
+        print(n.name+suffix)
+    for n in nodes.values():
+        for c in n.conns.keys():
+            if ord(n.name[0]) < ord(c.name[0]):
+                print(n.name+suffix+" "+c.name+suffix)
+    print("###########")
 
-#     def __init__(self, node: Node, dist: int=1):
-#         self.node = node
-#         self.dist = dist
-
-#     def __repr__(self):
-#         return f"<Conn {self.node.__repr__()} {self.dist}>"
-
-#     def __eq__(self, o: Connection):
 
 
 class Node:
     conns: dict[Node, int] = None
-    flow_rate: int = None
-    opened: int = None
-    highest: dict[int, (int,int)] = None
+    rate: int = None
+    opened: list[str] = None
     name: str = None
 
     def __init__(self, name, rate):
         self.name = name
         self.rate = rate
         self.conns = dict()
-        self.highest = defaultdict(lambda: (0,0))
 
-    def check(self: Node, time: int, released: int, speed: int, opened: list[name]):
+    def check(self: Node, time_left: int, released: int, opened: list[str], path: list[str]):
         global ma
-        if time == 30:
-            if released+speed > ma:
-                ma = released+speed
-                print(ma)
-            return
-        # if self.highest[time][0] < released and self.highest[time][1] < speed: return
-        # if self.highest[time][0] >= released and self.highest[time][1] >= speed:
-        #     self.highest[time] = (released, speed)
-        if (name not in opened) and self.rate > 0:
-            self.check(time+1, released+speed, speed+self.rate, opened + [self.name])
-        for c in self.conns:
-            c.check(time+1, released+speed, speed, opened)
+        # print(unopened)
+        for uo in nodes:
+            if uo in opened: continue
+            dist = dists[self.name][uo]
+            if time_left-dist <= 0:
+                r = released+nodes[uo].rate*time_left
+                # if path[0] == "DD 0 1": print(path) # D 0, B 20, J 33, H 54, E 79, C 81
+                if r > ma:
+                    # print(uol, time_left, dist, released, r, path)
+                    print(ma)
+                    ma = max(ma, r)
+                continue
+            
+            nodes[uo].check(time_left-dist-1, released + (time_left-dist-1)*nodes[uo].rate, uol, path + [uo + " " + str(time_left)])
 
     def __repr__(self, depth=0):
         return f"<Node '{self.name}' {self.rate} {[f'({n.__repr__(1)}: {nd})' for n, nd in self.conns.items()] if depth==0 else ''}>"
 
+    def __lt__(self, o: Node):
+        return self.name < o.name
 
+    # def getConnStr(self):
+    #     return f"{self.name}: {','.join(n.name for n in self.conns.keys())}"
+
+def bfs(a: Node, b: Node):
+    unvisited = set(nodes.values())
+    unvisited.remove(a)
+    q: list[tuple[int, Node]] = []
+    heappush(q, (0, a))
+    while b in unvisited:
+        d, n = heappop(q)
+        for c, cd in n.conns.items():
+            if c not in unvisited: continue
+            if c == b: return d+cd
+            heappush(q, (d+cd, c))
+    print("error")
+    return None
+
+# def generatePaths(pos, open, time_left):
+#     for c in nodes:
+#         if 
+
+def getDistNodes(a: Node, b: Node):
+    if b in a.conns.keys():
+        return a.conns[b]
+    return bfs(a, b)
+
+conns: dict[str, list[str]] = {}
 for l in data:
     m = re.match(r"Valve (.*) has flow rate=(.*); tunnels? leads? to valves? (.*)", l)
     name, flowrate, others = m.group(1), int(m.group(2)), m.group(3).split(", ")
     conns[name] = others
     nodes[name] = Node(name, flowrate)
-        
-for name, connected in conns.items():
-    if nodes[name].rate == 0:
-        for c in connected:
-            for d in connected:
-                if c == d: continue
-                nodes[c].conns[nodes[d]] = 2
-                nodes[d].conns[nodes[c]] = 2
-    else:
-        for c in connected:
-            nodes[name].conns[nodes[c]] = 1
 
-starts: set[Node] = set()
-starts.add(nodes["AA"])
+for name, connected in conns.items():
+    for c in connected:
+        nodes[name].conns[nodes[c]] = 1
+
+# for n in nodes.values():
+#     print(n.getConnStr())
+# print("-----")
+
+# printNodes()
+printNodes()
 
 foundZero = True
 while foundZero:
     foundZero = False
     for n in nodes.values():
-        print(n.rate, len(n.conns))
-        if n.rate == 0 and len(n.conns) != 0:
-            # print(n)
-            foundZero = True
+        if n.rate == 0:
+            # print(n.name, n.conns.keys())
             for c, cd in n.conns.items():
                 for d, dd in n.conns.items():
                     if c == d: continue
+                    # print(c)
+                    # print(d)
+                    # print(c.name, d.name)
                     nodes[c.name].conns[d] = cd+dd
                     nodes[d.name].conns[c] = cd+dd
-            if n in starts:
-                for c in n.conns.keys():
-                    starts.add(c)
-                starts.remove(n)
-            n.conns = dict()
+                # print(c)
+                c.conns.pop(n)
+            if n.name != "AA":
+                n.conns = dict()
+                nodes.pop(n.name)
+                foundZero = True
+            # print(nodes["AA"])
+            break
 
-nodes = {n.name: n for n in nodes.values() if n.rate != 0}
+nodes = {n.name: n for n in nodes.values() if len(n.conns) != 0}
 for n in nodes.values():
-    n.conns = {n: d for n, d in n.conns.items() if n.rate != 0}
+    n.conns = {n: d for n, d in n.conns.items() if len(n.conns) != 0}
+printNodes("1")
+exit()
+for n in nodes.values():
+    dists[n.name] = {}
+    for n2 in nodes.values():
+        # print(n.name, n2.name)
+        if n2.name == "AA": continue
+        if n == n2:
+            dists[n.name][n2.name] = 0
+        else:
+            dists[n.name][n2.name] = getDistNodes(n, n2)
 
-print(nodes)
-print()
-print(starts)
-for n in starts:
-    n.check(0, 0, 0, [])
-    print(ma)
-# nodes["AA"].check(0, 0, 0, [])
+# for nn, ds in dists.items():
+#     print(nn, ds)
+# print(nodes["AA"])
 
-# print(check("AA", [], 0, 1))
+
+# unopenedStart = list(nodes.keys())
+# unopenedStart.remove("AA")
+# # print(unopenedStart)
+# print("searching path")
+# nodes["AA"].check(30, 0, unopenedStart, [])
+# print(ma)
 
 # 6228 high
 # 5077 high
