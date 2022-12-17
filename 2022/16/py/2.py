@@ -1,155 +1,120 @@
-from __future__ import annotations
-from heapq import heappop, heappush
+from  __future__ import annotations
+from collections import defaultdict
+import math
+from multiprocessing import Pool
 import re
-from collections import deque, defaultdict
+import time
 
-data = open("i.txt").read().split("\n")
+# took ~30 min on my laptop
+# Nodes of flowrate 0 can be ignored
 
-nodes: dict[str, Node] = {}
-dists = {}
+AVAILABLE_TIME = 26
 
-ma = 0
+rates: dict[str, int] = {}
+conns: dict[str, dict[str, int]] = {}
+dists: dict[str, dict[str, int]] = {}
 
-def printNodes(suffix: str = ""):
-    print("###########")
-    for n in nodes.values():
-        print(n.name+suffix)
-    for n in nodes.values():
-        for c in n.conns.keys():
-            if ord(n.name[0]) < ord(c.name[0]):
-                print(n.name+suffix+" "+c.name+suffix)
-    print("###########")
+def readInput():
+    connStrs: dict[str, list[str]] = {}
+    data = open("i.txt").read().split("\n")
+    for l in data:
+        m = re.match(r"Valve (.*) has flow rate=(.*); tunnels? leads? to valves? (.*)", l)
+        name, flowrate, others = m.group(1), int(m.group(2)), m.group(3).split(", ")
+        connStrs[name] = others
+        rates[name] = flowrate
+    for n, ns in connStrs.items():
+        conns[n] = defaultdict(lambda: math.inf)
+        for c in ns:
+            conns[n][c] = 1
 
-
-
-class Node:
-    conns: dict[Node, int] = None
-    rate: int = None
-    opened: list[str] = None
-    name: str = None
-
-    def __init__(self, name, rate):
-        self.name = name
-        self.rate = rate
-        self.conns = dict()
-
-    def check(self: Node, time_left: int, released: int, opened: list[str], path: list[str]):
-        global ma
-        # print(unopened)
-        for uo in nodes:
-            if uo in opened: continue
-            dist = dists[self.name][uo]
-            if time_left-dist <= 0:
-                r = released+nodes[uo].rate*time_left
-                # if path[0] == "DD 0 1": print(path) # D 0, B 20, J 33, H 54, E 79, C 81
-                if r > ma:
-                    # print(uol, time_left, dist, released, r, path)
-                    print(ma)
-                    ma = max(ma, r)
-                continue
-            
-            nodes[uo].check(time_left-dist-1, released + (time_left-dist-1)*nodes[uo].rate, uol, path + [uo + " " + str(time_left)])
-
-    def __repr__(self, depth=0):
-        return f"<Node '{self.name}' {self.rate} {[f'({n.__repr__(1)}: {nd})' for n, nd in self.conns.items()] if depth==0 else ''}>"
-
-    def __lt__(self, o: Node):
-        return self.name < o.name
-
-    # def getConnStr(self):
-    #     return f"{self.name}: {','.join(n.name for n in self.conns.keys())}"
-
-def bfs(a: Node, b: Node):
-    unvisited = set(nodes.values())
-    unvisited.remove(a)
-    q: list[tuple[int, Node]] = []
-    heappush(q, (0, a))
-    while b in unvisited:
-        d, n = heappop(q)
-        for c, cd in n.conns.items():
-            if c not in unvisited: continue
-            if c == b: return d+cd
-            heappush(q, (d+cd, c))
-    print("error")
-    return None
-
-# def generatePaths(pos, open, time_left):
-#     for c in nodes:
-#         if 
-
-def getDistNodes(a: Node, b: Node):
-    if b in a.conns.keys():
-        return a.conns[b]
-    return bfs(a, b)
-
-conns: dict[str, list[str]] = {}
-for l in data:
-    m = re.match(r"Valve (.*) has flow rate=(.*); tunnels? leads? to valves? (.*)", l)
-    name, flowrate, others = m.group(1), int(m.group(2)), m.group(3).split(", ")
-    conns[name] = others
-    nodes[name] = Node(name, flowrate)
-
-for name, connected in conns.items():
-    for c in connected:
-        nodes[name].conns[nodes[c]] = 1
-
-# for n in nodes.values():
-#     print(n.getConnStr())
-# print("-----")
-
-# printNodes()
-printNodes()
-
-foundZero = True
-while foundZero:
-    foundZero = False
-    for n in nodes.values():
-        if n.rate == 0:
-            # print(n.name, n.conns.keys())
-            for c, cd in n.conns.items():
-                for d, dd in n.conns.items():
-                    if c == d: continue
-                    # print(c)
-                    # print(d)
-                    # print(c.name, d.name)
-                    nodes[c.name].conns[d] = cd+dd
-                    nodes[d.name].conns[c] = cd+dd
-                # print(c)
-                c.conns.pop(n)
-            if n.name != "AA":
-                n.conns = dict()
-                nodes.pop(n.name)
-                foundZero = True
-            # print(nodes["AA"])
+# remove valves with flowrate 0 and connect their neigbors (sets distances too)
+def reduceNodes():
+    while True:
+        for name, rate in rates.items():
+            if rate != 0 or name == "AA": continue
+            # connect neighbor-nodes with each other
+            for cs, cd in conns[name].items():
+                for ds, dd in conns[name].items():
+                    if cs == ds: continue
+                    conns[cs][ds] = min(conns[cs][ds], cd+dd)
+                    conns[ds][cs] = min(conns[ds][cs], cd+dd)
+            # remove 0-node
+            for cs in conns[name]:
+                conns[cs].pop(name)
+            conns.pop(name)
+            rates.pop(name)
+            break
+        else:
             break
 
-nodes = {n.name: n for n in nodes.values() if len(n.conns) != 0}
-for n in nodes.values():
-    n.conns = {n: d for n, d in n.conns.items() if len(n.conns) != 0}
-printNodes("1")
-exit()
-for n in nodes.values():
-    dists[n.name] = {}
-    for n2 in nodes.values():
-        # print(n.name, n2.name)
-        if n2.name == "AA": continue
-        if n == n2:
-            dists[n.name][n2.name] = 0
-        else:
-            dists[n.name][n2.name] = getDistNodes(n, n2)
+# calculates all distances between all nodes with FWI
+def calcDistances():
+    for n in rates:
+        dists[n] = dict()
+        for n2 in rates:
+            dists[n][n2] = math.inf
+        dists[n][n] = 0
+    for n1, cs in conns.items():
+        for n2, w in cs.items():
+            dists[n1][n2] = w
+    for k in rates:
+        for i in rates:
+            for j in rates:
+                dists[i][j] = min(dists[i][j], dists[i][k] + dists[k][j])
 
-# for nn, ds in dists.items():
-#     print(nn, ds)
-# print(nodes["AA"])
+# generates all paths through nodes within the timelimit
+def allPaths(node: str, unvisited: set[str], opened: list[str], time_left: int):
+    for n in unvisited:
+        d = dists[node][n]+1
+        if d < time_left:
+            yield from allPaths(n, unvisited - {n}, opened+[n], time_left-d)
+    yield opened
 
+# calculates the released pressure of a path
+def getPathReleased(rates: dict[str, int], dists: dict[str, dict[str, int]], opened: list[str]):
+    release = 0
+    t = AVAILABLE_TIME
+    cur = "AA"
+    for n in opened:
+        d = dists[cur][n]+1
+        t -= d
+        release += t * rates[n]
+        cur = n
+    return release
 
-# unopenedStart = list(nodes.keys())
-# unopenedStart.remove("AA")
-# # print(unopenedStart)
-# print("searching path")
-# nodes["AA"].check(30, 0, unopenedStart, [])
-# print(ma)
+# multi-threading for get2Max()
+def get2MaxPart(arg: tuple[dict[str, int], dict[str, dict[str, int]], list[str], int, int]):
+    rates, dists, paths, start, end = arg
+    pm = 0
+    for p in paths[start:end]:
+        for p2 in paths:
+            if len(set(p).intersection(p2)) != 0: continue
+            pm = max(pm, getPathReleased(rates, dists, p)+getPathReleased(rates, dists, p2))
+    return pm
 
-# 6228 high
-# 5077 high
-#2663 high
+# gets the maximal pressure released by two paths that do not contain the same valve
+def get2Max():
+    paths = [o for o in allPaths("AA", set(rates.keys()), [], AVAILABLE_TIME)]
+    l = len(paths)
+    lp = l / 10
+    with Pool(10) as p:
+        rs = p.map_async(get2MaxPart, [(rates, dists, paths, math.floor(lp*i), math.ceil(lp*(i+1))) for i in range(10)])
+        rs.wait()
+        return max(r for r in rs.get())
+
+if __name__ == "__main__":
+    readInput()
+    startTime = time.perf_counter_ns()
+    reduceNodes()
+    t1 = time.perf_counter_ns()
+    print(f"reduced nodes in {(t1-startTime)/1000000000}s")
+    calcDistances()
+    t2 = time.perf_counter_ns()
+    print(f"calculated distances in {(t2-t1)/1000000000}s")
+    print("this could take a long time ...")
+    print("i mean it. Go make yourself a cup of tea.")
+    result = get2Max()
+    endTime = time.perf_counter_ns()
+    print(f"found max path in {(endTime-t2)/1000000000}s")
+    print(f"finished after a total of {(endTime-startTime)/1000000000}s")
+    print(f"final result: {result}")
