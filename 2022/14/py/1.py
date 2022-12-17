@@ -1,8 +1,9 @@
 import re
 
 data = open("i.txt").read().split("\n")
-
 data2 = (list(int(n) for n in re.split(r" -> |,", l)) for l in  data)
+
+# convert input to poly-lines and get min/max x-/y-values to minimize board
 lines = []
 ma = 0
 mi = 9999999
@@ -20,6 +21,7 @@ lines = [[(p[0]-mi+1,p[1]) for p in l] for l in lines]
 
 board = [[0]*(ma-mi+3) for i in range(ya+1)]
 
+# draw lines on board
 for l in lines:
     for i, p1 in enumerate(l[:-1]):
         p2 = l[i+1]
@@ -30,8 +32,8 @@ for l in lines:
             for i in range(min(p1[0], p2[0]), max(p1[0], p2[0])+1):
                 board[p1[1]][i] = 1
 
+# simulate sand until y of one gets greater than the y of the lowest line
 fellOut = False
-
 c = 0
 while not fellOut:
     x = 500-mi+1
