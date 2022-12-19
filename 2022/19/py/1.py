@@ -1,8 +1,8 @@
 from collections import deque
+import itertools
+from multiprocessing import Pool
 import re
 import time
-
-data = open("i.txt").read().split("\n")
 
 class Blueprint:
     id: int = None
@@ -47,29 +47,35 @@ def solve(b: Blueprint, time):
         if ore >= b.oC and orR < max(b.cC, b.obC[0], b.gC[0]):
             q.append((orR+1, clR, obR, geR, ore+orR-b.oC, cla+clR, obs+obR, geo+geR, t-1))
 
-    return best
+    print(f"result: {b.id} {best} {best*b.id}")
+    return (b.id, best)
 
-startTime = time.perf_counter()
-res = 0
-for line in data:
-    m = re.match(r"Blueprint (\d+): Each ore robot costs (\d+) ore\. Each clay robot costs (\d+) ore\. Each obsidian robot costs (\d+) ore and (\d+) clay\. Each geode robot costs (\d+) ore and (\d+) obsidian\.", line)
-    
-    b = Blueprint()
-    b.id = int(m.group(1))
-    b.oC = int(m.group(2))
-    b.cC = int(m.group(3))
-    b.obC = (int(m.group(4)), int(m.group(5)))
-    b.gC = (int(m.group(6)), int(m.group(7)))
+if __name__ == "__main__":
+    data = open("i.txt").read().split("\n")
+    startTime = time.perf_counter()
+    res = 0
+    with Pool(10) as p:
+        bps = []
+        for line in data:
+            m = re.match(r"Blueprint (\d+): Each ore robot costs (\d+) ore\. Each clay robot costs (\d+) ore\. Each obsidian robot costs (\d+) ore and (\d+) clay\. Each geode robot costs (\d+) ore and (\d+) obsidian\.", line)
+            
+            b = Blueprint()
+            b.id = int(m.group(1))
+            b.oC = int(m.group(2))
+            b.cC = int(m.group(3))
+            b.obC = (int(m.group(4)), int(m.group(5)))
+            b.gC = (int(m.group(6)), int(m.group(7)))
+            bps.append(b)
 
-    r = solve(b, 24)
-    res += r * b.id
-    print("result:", b.id, r, r*b.id)
+        rs = p.starmap(solve, zip(bps, itertools.repeat(24)))
+        for id, r in rs:
+            res += id * r
 
-print("final:", res)
-dt = time.perf_counter() - startTime
-m = dt // 60
-s = dt % 60
-if m != 0:
-    print(f"finished after {m}min {s}s")
-else:
-    print(f"finished after {s}s")
+    print("final:", res)
+    dt = time.perf_counter() - startTime
+    m = dt // 60
+    s = dt % 60
+    if m != 0:
+        print(f"finished after {m}min {s}s")
+    else:
+        print(f"finished after {s}s")
