@@ -52,7 +52,6 @@ def solve(b: Blueprint, time):
     return best
 
 startTime = time.perf_counter()
-ma = 0
 res = 1
 for line in data[:3]:
     m = re.match(r"Blueprint (\d+): Each ore robot costs (\d+) ore\. Each clay robot costs (\d+) ore\. Each obsidian robot costs (\d+) ore and (\d+) clay\. Each geode robot costs (\d+) ore and (\d+) obsidian\.", line)
@@ -69,4 +68,10 @@ for line in data[:3]:
     print("result:", r)
 
 print("final:", res)
-print(f"finished after {(time.perf_counter()-startTime)}s")
+dt = time.perf_counter() - startTime
+m = dt // 60
+s = dt % 60
+if m != 0:
+    print(f"finished after {m}min {s}s")
+else:
+    print(f"finished after {s}s")
