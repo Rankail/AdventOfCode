@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# node for double linked list
 class Node:
     pre: Node = None
     nex: Node = None
@@ -8,15 +9,14 @@ class Node:
     def __init__(self, v: int):
         self.value = v
 
-    def __repr__(self):
-        return str(self.value)
-
+    # remove node from list
     def unlink(self):
         self.pre.nex = self.nex
         self.nex.pre = self.pre
 
+    # unlink node, traverse by value of node and insert
     def move(self):
-        if self.value % len(nums) == 0: return
+        if self.value % (len(nums)-1) == 0: return
         self.unlink()
         if self.value > 0:
             cur = self
@@ -44,13 +44,16 @@ for n in nums:
     if n == 0:
         zero = nodes[-1]
 
+# connect nodes
 for p, n in zip(nodes, nodes[1:] + [nodes[0]]):
     p.nex = n
     n.pre = p
 
+# 'mix' nodes
 for n in nodes:
     n.move()
 
+# traverse from zero
 res = 0
 cur = zero
 for _ in range(3):
